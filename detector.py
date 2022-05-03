@@ -31,6 +31,8 @@ def sus_region_finder(sus_img, blank_sus_img):
 
     output = []
     for i in range(num_labels):
+        if (i == 0):
+            continue
         margin = 10
         x_start = max(stats[i,0] - margin, 0)
         y_start = max(stats[i,1] - margin, 0)
@@ -49,7 +51,8 @@ def sus_blur(img, blur_amount):
     return img
 
 blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
-non_blank = cv2.imread("training_images/purple_cup.png")
+non_blank = cv2.imread("training_images/white_cup.png")
+#non_blank = cv2.imread("training_images/purple_cup.png")
 #non_blank = cv2.imread("training_images/black_box.png")
 #print(np.shape(blank_image))
 #(720,1280)
