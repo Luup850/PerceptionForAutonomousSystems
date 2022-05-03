@@ -79,6 +79,7 @@ class SusDetector:
     def __init__(self, blank_image):
         self.blank_image = blank_image
         self.model = object
+        self.labels = []
 
     def detect(self, img):
         sus_regions = sus_region_finder(img, self.blank_image)
@@ -115,6 +116,20 @@ class SusDetector:
         self.model.summary()
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 
-    def train(self, train_images, train_labels):
+    def train(self, list_of_paths, labels, epoch):
+        """
+        Make sure the training images are scalable!
+        """
+        X = []
+        y = []
+        self.labels = copy.deepcopy(labels)
+        for i,p in enumerate(list_of_paths):
+            for filename in glob.glob(p):
+                img = cv2.imread(filename)
+                img = cv2.resize(img, (32, 32))
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+                X.append(img)
+                y.append(i)
         pass
-        #self.model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        self.model.fit(X_train, y_train, epochs=epoch, validation_data=(X_test, y_test))
