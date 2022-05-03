@@ -80,8 +80,13 @@ class SusDetector:
         self.blank_image = blank_image
         self.model = object
         self.labels = []
+        self.IsCompiled = False
 
     def detect(self, img):
+        if (self.IsCompiled == False):
+            self.compile_model()
+            self.IsCompiled = True
+
         sus_regions = sus_region_finder(img, self.blank_image)
 
         for sus in sus_regions:
@@ -117,6 +122,9 @@ class SusDetector:
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 
     def train(self, list_of_paths, labels, epoch):
+        if (self.IsCompiled == False):
+            self.compile_model()
+            self.IsCompiled = True
         """
         Make sure the training images are scalable!
         """
@@ -133,3 +141,9 @@ class SusDetector:
         pass
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
         self.model.fit(X_train, y_train, epochs=epoch, validation_data=(X_test, y_test))
+
+    def save_model(self, path):
+        self.model.save_weights(path)
+
+    def load_model(self, path):
+        self.model.load_weights(path)
