@@ -69,8 +69,8 @@ blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
 non_blank = cv2.imread("training_images/black_box.png")
 #print(np.shape(blank_image))
 #(720,1280)
-sus_region_finder(non_blank, blank_image)
-cv2.waitKey(0)
+#sus_region_finder(non_blank, blank_image)
+#cv2.waitKey(0)
 
 
 # Actual detector
@@ -89,6 +89,8 @@ class SusDetector:
 
         sus_regions = sus_region_finder(img, self.blank_image)
 
+        regions = []
+
         for sus in sus_regions:
             x_c = int((sus[2] - sus[0]) / 2)
             y_c = int((sus[3] - sus[1]) / 2)
@@ -105,18 +107,20 @@ class SusDetector:
 
             area = img[x_start:x_end, y_start:y_end]
             area = cv2.resize(area, (32, 32))
+            regions.append(area)
             
-            return self.model.predict(area)
+        regions = np.array(regions)
+        return self.model.predict(regions, batch_size=len(regions))
 
     
     def compile_model(self):
         self.model = models.Sequential()
-        self.model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 1)))
+        self.model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
         self.model.add(layers.MaxPooling2D((7, 7)))
         #model.add(layers.Conv2D(4, (3, 3), activation='relu'))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(4, activation='softmax'))
+        self.model.add(layers.Dense(1, activation='relu'))
 
         self.model.summary()
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
@@ -135,10 +139,14 @@ class SusDetector:
             for filename in glob.glob(p):
                 img = cv2.imread(filename)
                 img = cv2.resize(img, (32, 32))
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+                #img.reshape(32, 32, 3)
+                #img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 X.append(img)
                 y.append(i)
-        pass
+        
+        X = np.array(X)
+        y = np.array(y)
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
         self.model.fit(X_train, y_train, epochs=epoch, validation_data=(X_test, y_test))
 
@@ -147,3 +155,12 @@ class SusDetector:
 
     def load_model(self, path):
         self.model.load_weights(path)
+
+#classes = ["Book", "Box", "Cup", "Nothing"]
+#paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*", "D:\\DataTraining\\nothing\\*"]
+classes = ["Cup"]
+paths = ["D:\\DataTraining\\cup\\*"]
+
+sus = SusDetector(blank_image)
+sus.train(paths, classes, 10)
+print(sus.detect(non_blank))
