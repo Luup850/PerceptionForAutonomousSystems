@@ -132,7 +132,7 @@ class SusDetector:
         #model.add(layers.Conv2D(4, (3, 3), activation='relu'))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(4, activation='softmax'))
+        self.model.add(layers.Dense(3, activation='softmax'))
 
         self.model.summary()
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
@@ -179,16 +179,17 @@ book = cv2.imread("training_images/book.png")
 purple_cup = cv2.imread("training_images/purple_cup.png")
 black_box = cv2.imread("training_images/black_box.png")
 
-classes = ["Book", "Box", "Cup", "Nothing"]
-paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*", "D:\\DataTraining\\nothing\\*"]
+classes = ["Book", "Box", "Cup"]#, "Nothing"]
+paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
 #classes = ["Cup"]
 #paths = ["D:\\DataTraining\\cup\\*"]
 
 sus = SusDetector(blank_image)
-sus.train(paths, classes, 10)
+sus.train(paths, classes, 400)
+sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
-print("White Cup:")
-print(np.around(sus.detect(white_cup), decimals=2))
+#print("White Cup:")
+#print(np.around(sus.detect(white_cup), decimals=2))
 #print("Book:")
 #print(np.around(sus.detect(book), decimals=2))
 #print("Purple cup:")
