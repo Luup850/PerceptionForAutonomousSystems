@@ -1,7 +1,6 @@
 #%%
 import copy
 import cv2
-from cv2 import HOGDESCRIPTOR_L2HYS
 from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -109,7 +108,7 @@ class SusDetector:
             x_end = min(x_c + scale, width)
             y_end = min(y_c + scale, height)
 
-            area = copy.deepcopy(img[y_start:y_end, x_start:x_end])
+            area = copy.deepcopy(img[y_start:y_end, x_start:x_end, :])
             area = cv2.resize(area, (32, 32))
             #cv2.imshow("s", area)
             regions.append(area)
