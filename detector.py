@@ -45,8 +45,8 @@ def sus_region_finder(sus_img, blank_sus_img):
         x_end = min(stats[i,0]+stats[i,2] + margin, width)
         y_end = min(stats[i,1]+stats[i,3] + margin, height)
         output.append((x_start, y_start, x_end, y_end))
-        cv2.rectangle(org_sus_img, (x_start, y_start), (x_end, y_end), (0,255,0), 2)
-    cv2.imshow("Sus", org_sus_img)
+        #cv2.rectangle(org_sus_img, (x_start, y_start), (x_end, y_end), (0,255,0), 2)
+    #cv2.imshow("Sus", org_sus_img)
     return output
     
 
@@ -62,11 +62,6 @@ def errode_dilate(img, kernel_size, ite):
     dilation = cv2.dilate(erosion,kernel,iterations = ite)
     return dilation
 
-blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
-#non_blank = cv2.imread("training_images/white_cup.png")
-#non_blank = cv2.imread("training_images/book.png")
-#non_blank = cv2.imread("training_images/purple_cup.png")
-non_blank = cv2.imread("training_images/black_box.png")
 #print(np.shape(blank_image))
 #(720,1280)
 #sus_region_finder(non_blank, blank_image)
@@ -89,11 +84,20 @@ class SusDetector:
 
         sus_regions = sus_region_finder(img, self.blank_image)
 
+        #copy_of_img = copy.deepcopy(img)
+        #for region in sus_regions:
+        #    cv2.rectangle(copy_of_img, (region[0], region[1]), (region[2], region[3]), (0,255,0), 2)
+        #cv2.imshow("Sus", copy_of_img)
+
         regions = []
 
-        for sus in sus_regions:
-            x_c = int((sus[2] - sus[0]) / 2)
-            y_c = int((sus[3] - sus[1]) / 2)
+        # For sus debugging
+        clone = copy.deepcopy(img)
+        colors = [(255,0,0), (0,255,0), (0,0,255)]
+
+        for i,sus in enumerate(sus_regions):
+            x_c = int((sus[2] + sus[0]) / 2)
+            y_c = int((sus[3] + sus[1]) / 2)
 
             scale = int(max(sus[2] - sus[0], sus[3] - sus[1]) / 2)
 
@@ -105,12 +109,21 @@ class SusDetector:
             x_end = min(x_c + scale, width)
             y_end = min(y_c + scale, height)
 
-            area = img[x_start:x_end, y_start:y_end]
+            area = copy.deepcopy(img[y_start:y_end, x_start:x_end])
             area = cv2.resize(area, (32, 32))
+            #cv2.imshow("s", area)
             regions.append(area)
+
+            cv2.rectangle(clone, (x_start, y_start), (x_end, y_end), colors[i], 2)
             
         regions = np.array(regions)
-        return self.model.predict(regions, batch_size=len(regions))
+        res = self.model.predict(regions, batch_size=len(regions))
+        cv2.imshow("Sus", clone)
+
+        
+
+        #print(res)
+        return res
 
     
     def compile_model(self):
@@ -120,7 +133,7 @@ class SusDetector:
         #model.add(layers.Conv2D(4, (3, 3), activation='relu'))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(1, activation='relu'))
+        self.model.add(layers.Dense(4, activation='softmax'))
 
         self.model.summary()
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
@@ -147,7 +160,7 @@ class SusDetector:
         X = np.array(X)
         y = np.array(y)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
         self.model.fit(X_train, y_train, epochs=epoch, validation_data=(X_test, y_test))
 
     def save_model(self, path):
@@ -156,11 +169,32 @@ class SusDetector:
     def load_model(self, path):
         self.model.load_weights(path)
 
-#classes = ["Book", "Box", "Cup", "Nothing"]
-#paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*", "D:\\DataTraining\\nothing\\*"]
-classes = ["Cup"]
-paths = ["D:\\DataTraining\\cup\\*"]
+
+
+
+
+
+blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
+white_cup = cv2.imread("training_images/white_cup.png")
+book = cv2.imread("training_images/book.png")
+purple_cup = cv2.imread("training_images/purple_cup.png")
+black_box = cv2.imread("training_images/black_box.png")
+
+classes = ["Book", "Box", "Cup", "Nothing"]
+paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*", "D:\\DataTraining\\nothing\\*"]
+#classes = ["Cup"]
+#paths = ["D:\\DataTraining\\cup\\*"]
 
 sus = SusDetector(blank_image)
 sus.train(paths, classes, 10)
-print(sus.detect(non_blank))
+
+print("White Cup:")
+print(np.around(sus.detect(white_cup), decimals=2))
+#print("Book:")
+#print(np.around(sus.detect(book), decimals=2))
+#print("Purple cup:")
+#print(np.around(sus.detect(purple_cup), decimals=2))
+#print("Black box Cup:")
+#print(np.around(sus.detect(black_box), decimals=2))
+#print(np.argmax(sus.detect(non_blank), axis = 1)[0])
+cv2.waitKey(0)
