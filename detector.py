@@ -148,7 +148,7 @@ class SusDetector:
         cv2.imshow("Sus", clone)
 
         #print(res)
-        return res
+        return (res, pos)
 
     
     def compile_model(self):
