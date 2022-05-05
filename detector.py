@@ -83,7 +83,7 @@ class SusDetector:
         self.labels = []
         self.IsCompiled = False
 
-    def detect(self, img):
+    def detect(self, img, return_images=False):
         if (self.IsCompiled == False):
             self.compile_model()
             self.IsCompiled = True
@@ -130,6 +130,8 @@ class SusDetector:
 
             
         regions = np.array(regions)
+        if(len(regions) == 0):
+            return []
         res = self.model.predict(regions, batch_size=len(regions))
 
         for l,r in enumerate(res):
@@ -145,8 +147,10 @@ class SusDetector:
 
         ### Enable me to see the sus regions ###
         #cv2.imshow("Sus", clone)
- 
-        return (res, pos)
+        if(return_images):
+            return (res, pos, clone)
+        else:
+            return (res, pos)
 
     
     def compile_model(self):
@@ -200,24 +204,47 @@ class SusDetector:
 
 
 
-#blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
+blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
 #white_cup = cv2.imread("training_images/white_cup.png")
 #book = cv2.imread("training_images/book.png")
 #purple_cup = cv2.imread("training_images/purple_cup.png")
 #black_box = cv2.imread("training_images/black_box.png")
 
-#classes = ["Book", "Box", "Cup"]#, "Nothing"]
+classes = ["Book", "Box", "Cup"]#, "Nothing"]
 #paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
 #classes = ["Cup"]
 #paths = ["D:\\DataTraining\\cup\\*"]
 
-#sus = SusDetector(blank_image)
-#sus.labels = classes
+sus = SusDetector(blank_image)
+sus.labels = classes
+
+
 
 #sus.train(paths, classes, 400)
 #sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
-#sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
+sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
+
+img_array = []
+for i,p in enumerate(glob.glob("C:\\Users\\Marcus\\Downloads\\left\\*")):
+    if (i > 1):
+        print("{0} out of {1} images done".format(i, 1453))
+        res = sus.detect(cv2.imread(p), True)
+        if(len(res) != 0):
+            img_array.append(res[2])
+        else:
+            img_array.append(cv2.imread(p))
+
+
+height, width, layers = blank_image.shape
+size = (width, height)
+out = cv2.VideoWriter('test.avi', cv2.VideoWriter_fourcc(*'mp4v'), 15, size)
+
+for i in range(len(img_array)):
+    out.write(img_array[i])
+
+out.release()
+
 #print("White Cup:")
 #print(np.around(sus.detect(white_cup), decimals=2))
 #cv2.waitKey(0)
