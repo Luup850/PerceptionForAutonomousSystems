@@ -11,11 +11,11 @@ from sklearn.model_selection import train_test_split
 import cv2
 
 #Area (x start, x end, y start, y end)
-def check_if_in_area(center : tuple, area : tuple):
-    if(center[0] >= area[0] and center[0] <= area[1] and center[1] >= area[2] and center[1] <= area[3]):
-        return True
-    else:
-        return False
+def check_if_in_area(center : tuple, area : list):
+    for a in area:
+        if(center[0] >= a[0] and center[0] <= a[1] and center[1] >= a[2] and center[1] <= a[3]):
+            return True
+    return False
 
 def sus_region_finder(sus_img, blank_sus_img):
     """Input: sus_img, blank_sus_img : numpy array
@@ -81,8 +81,9 @@ class SusDetector:
     def __init__(self, blank_image):
         self.blank_image = blank_image
         self.model = object
-        self.labels = []
+        self.labels = ["Book", "Box", "Cup"]
         self.IsCompiled = False
+        self.occlusion_area = []
 
     def detect(self, img, return_images=False):
         if (self.IsCompiled == False):
@@ -124,7 +125,7 @@ class SusDetector:
             area = cv2.resize(area, (32, 32))
 
 
-            if(not check_if_in_area((x_c, y_c), occlusion_area)):
+            if(not check_if_in_area((x_c, y_c), self.occlusion_area)):
                 regions.append(area)
                 pos.append((x_start, y_start, x_end, y_end))
                 center.append((x_c, y_c))
@@ -205,47 +206,47 @@ class SusDetector:
 
 
 
-blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
-white_cup = cv2.imread("training_images/white_cup.png")
-book = cv2.imread("training_images/book.png")
-purple_cup = cv2.imread("training_images/purple_cup.png")
-black_box = cv2.imread("training_images/black_box.png")
+#blank_image = cv2.imread("training_images/Right0.png")
+#white_cup = cv2.imread("training_images/white_cup.png")
+#book = cv2.imread("training_images/book.png")
+#purple_cup = cv2.imread("training_images/purple_cup.png")
+#black_box = cv2.imread("training_images/black_box.png")
 
-classes = ["Book", "Box", "Cup"]#, "Nothing"]
-paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
+#classes = ["Book", "Box", "Cup"]#, "Nothing"]
+#paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
 #classes = ["Cup"]
 #paths = ["D:\\DataTraining\\cup\\*"]
 
-sus = SusDetector(blank_image)
-sus.labels = classes
+#sus = SusDetector(blank_image)
+#sus.labels = classes
 
 
 
-sus.train(paths, classes, 400)
-sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
+#sus.train(paths, classes, 400)
+#sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
 #sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
+def makevideo(path : str, d : SusDetector):
+    img_array = []
+    for i,p in enumerate(glob.glob(path)):
+        if (i > 1):
+            print("{0} out of {1} images done".format(i, 1453))
+            res = d.detect(cv2.imread(p), True)
+            if(len(res) != 0):
+                img_array.append(res[2])
+            else:
+                img_array.append(cv2.imread(p))
 
-#img_array = []
-#for i,p in enumerate(glob.glob("C:\\Users\\Marcus\\Downloads\\left\\*")):
-#    if (i > 1):
-#        print("{0} out of {1} images done".format(i, 1453))
-#        res = sus.detect(cv2.imread(p), True)
-#        if(len(res) != 0):
-#            img_array.append(res[2])
-#        else:
-#            img_array.append(cv2.imread(p))
-#
-#
-#height, width, layers = blank_image.shape
-#size = (width, height)
-#out = cv2.VideoWriter('test.avi', cv2.VideoWriter_fourcc(*'mp4v'), 15, size)
-#
-#for i in range(len(img_array)):
-#    out.write(img_array[i])
-#
-#out.release()
+
+    height, width, layers = d.blank_image.shape
+    size = (width, height)
+    out = cv2.VideoWriter('test.avi', cv2.VideoWriter_fourcc(*'mp4v'), 15, size)
+
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+
+    out.release()
 #print("White Cup:")
 #print(np.around(sus.detect(white_cup)[0], decimals=4))
 #cv2.waitKey(0)
@@ -259,18 +260,18 @@ sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSys
 #print(np.around(sus.detect(black_box)[0], decimals=4))
 #cv2.waitKey(0)
 
-
-print("White Cup:")
-cv2.imshow("Cup", sus.detect(white_cup, True)[2])
-cv2.waitKey(0)
-print("Book:")
-cv2.imshow("Cup", sus.detect(book, True)[2])
-cv2.waitKey(0)
-print("Purple cup:")
-cv2.imshow("Cup", sus.detect(purple_cup, True)[2])
-cv2.waitKey(0)
-print("Black box Cup:")
-cv2.imshow("Cup", sus.detect(black_box, True)[2])
-cv2.waitKey(0)
+def test(sus : SusDetector):
+    print("White Cup:")
+    cv2.imshow("Cup", sus.detect(white_cup, True)[2])
+    cv2.waitKey(0)
+    print("Book:")
+    cv2.imshow("Cup", sus.detect(book, True)[2])
+    cv2.waitKey(0)
+    print("Purple cup:")
+    cv2.imshow("Cup", sus.detect(purple_cup, True)[2])
+    cv2.waitKey(0)
+    print("Black box Cup:")
+    cv2.imshow("Cup", sus.detect(black_box, True)[2])
+    cv2.waitKey(0)
 
 #print(np.argmax(sus.detect(non_blank), axis = 1)[0])
