@@ -9,6 +9,13 @@ import glob
 from sklearn.model_selection import train_test_split
 import cv2
 
+#Area (x start, x end, y start, y end)
+def check_if_in_area(center : tuple, area : tuple):
+    if(center[0] >= area[0] and center[0] <= area[1] and center[1] >= area[2] and center[1] <= area[3]):
+        return True
+    else:
+        return False
+
 def sus_region_finder(sus_img, blank_sus_img):
     """Input: sus_img, blank_sus_img : numpy array
     Output: sus_score
@@ -96,6 +103,8 @@ class SusDetector:
         pos = []
         center = []
 
+        occlusion_area = (725, 1032, 131, 679)
+
         for i,sus in enumerate(sus_regions):
             x_c = int((sus[2] + sus[0]) / 2)
             y_c = int((sus[3] + sus[1]) / 2)
@@ -113,9 +122,11 @@ class SusDetector:
             area = copy.deepcopy(img[y_start:y_end, x_start:x_end, :])
             area = cv2.resize(area, (32, 32))
             #cv2.imshow("s", area)
-            regions.append(area)
-            pos.append((x_start, y_start, x_end, y_end))
-            center.append((x_c, y_c))
+
+            if(not check_if_in_area((x_c, y_c), occlusion_area)):
+                regions.append(area)
+                pos.append((x_start, y_start, x_end, y_end))
+                center.append((x_c, y_c))
 
             #cv2.putText(clone, str(i), (x_c, y_c), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[i % 3], 2)
             #cv2.rectangle(clone, (x_start, y_start), (x_end, y_end), colors[i], 2)
