@@ -121,15 +121,13 @@ class SusDetector:
 
             area = copy.deepcopy(img[y_start:y_end, x_start:x_end, :])
             area = cv2.resize(area, (32, 32))
-            #cv2.imshow("s", area)
+            
 
             if(not check_if_in_area((x_c, y_c), occlusion_area)):
                 regions.append(area)
                 pos.append((x_start, y_start, x_end, y_end))
                 center.append((x_c, y_c))
 
-            #cv2.putText(clone, str(i), (x_c, y_c), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[i % 3], 2)
-            #cv2.rectangle(clone, (x_start, y_start), (x_end, y_end), colors[i], 2)
             
         regions = np.array(regions)
         res = self.model.predict(regions, batch_size=len(regions))
@@ -145,9 +143,9 @@ class SusDetector:
             cv2.putText(clone, self.labels[index], (center[l][0], center[l][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[l % 3], 2)
             cv2.rectangle(clone, (pos[l][0], pos[l][1]), (pos[l][2], pos[l][3]), colors[l % 3], 2)
 
+        ### Enable me to see the sus regions ###
         cv2.imshow("Sus", clone)
-
-        #print(res)
+ 
         return (res, pos)
 
     
@@ -202,32 +200,35 @@ class SusDetector:
 
 
 
-blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
-white_cup = cv2.imread("training_images/white_cup.png")
-book = cv2.imread("training_images/book.png")
-purple_cup = cv2.imread("training_images/purple_cup.png")
-black_box = cv2.imread("training_images/black_box.png")
+#blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
+#white_cup = cv2.imread("training_images/white_cup.png")
+#book = cv2.imread("training_images/book.png")
+#purple_cup = cv2.imread("training_images/purple_cup.png")
+#black_box = cv2.imread("training_images/black_box.png")
 
-classes = ["Book", "Box", "Cup"]#, "Nothing"]
-paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
+#classes = ["Book", "Box", "Cup"]#, "Nothing"]
+#paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
 #classes = ["Cup"]
 #paths = ["D:\\DataTraining\\cup\\*"]
 
-sus = SusDetector(blank_image)
-sus.labels = classes
+#sus = SusDetector(blank_image)
+#sus.labels = classes
+
 #sus.train(paths, classes, 400)
 #sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
-sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
-print("White Cup:")
-print(np.around(sus.detect(white_cup), decimals=2))
-cv2.waitKey(0)
-print("Book:")
-print(np.around(sus.detect(book), decimals=2))
-cv2.waitKey(0)
-print("Purple cup:")
-print(np.around(sus.detect(purple_cup), decimals=2))
-cv2.waitKey(0)
-print("Black box Cup:")
-print(np.around(sus.detect(black_box), decimals=2))
-cv2.waitKey(0)
+
+#sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
+#print("White Cup:")
+#print(np.around(sus.detect(white_cup), decimals=2))
+#cv2.waitKey(0)
+#print("Book:")
+#print(np.around(sus.detect(book), decimals=2))
+#cv2.waitKey(0)
+#print("Purple cup:")
+#print(np.around(sus.detect(purple_cup), decimals=2))
+#cv2.waitKey(0)
+#print("Black box Cup:")
+#print(np.around(sus.detect(black_box), decimals=2))
+#cv2.waitKey(0)
+
 #print(np.argmax(sus.detect(non_blank), axis = 1)[0])
