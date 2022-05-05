@@ -3,7 +3,7 @@ from detector import makevideo
 import cv2
 
 # 1. Detector needs a blank image. These are found in 'training_images'
-blank_image = cv2.imread("training_images/NoOclusionRight0.png")
+blank_image = cv2.imread("training_images/OclusionRight0.png")
 
 white_cup = cv2.imread("training_images/white_cup.png")
 book = cv2.imread("training_images/book.png")
