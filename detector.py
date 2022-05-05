@@ -4,6 +4,7 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
+import datetime
 from tensorflow.keras import datasets, layers, models
 import glob
 from sklearn.model_selection import train_test_split
@@ -142,7 +143,7 @@ class SusDetector:
                     largest = j
                     index = i
             
-            cv2.putText(clone, self.labels[index], (center[l][0], center[l][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[l % 3], 2)
+            cv2.putText(clone, self.labels[index] + " | " + str(largest), (center[l][0], center[l][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[l % 3], 2)
             cv2.rectangle(clone, (pos[l][0], pos[l][1]), (pos[l][2], pos[l][3]), colors[l % 3], 2)
 
         ### Enable me to see the sus regions ###
@@ -163,7 +164,7 @@ class SusDetector:
         self.model.add(layers.Dense(3, activation='softmax'))
 
         self.model.summary()
-        self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+        self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['MeanSquaredError', 'accuracy'])
 
     def train(self, list_of_paths, labels, epoch):
         if (self.IsCompiled == False):
@@ -205,13 +206,13 @@ class SusDetector:
 
 
 blank_image = cv2.imread("training_images/1585434750_438314676_Left.png")
-#white_cup = cv2.imread("training_images/white_cup.png")
-#book = cv2.imread("training_images/book.png")
-#purple_cup = cv2.imread("training_images/purple_cup.png")
-#black_box = cv2.imread("training_images/black_box.png")
+white_cup = cv2.imread("training_images/white_cup.png")
+book = cv2.imread("training_images/book.png")
+purple_cup = cv2.imread("training_images/purple_cup.png")
+black_box = cv2.imread("training_images/black_box.png")
 
 classes = ["Book", "Box", "Cup"]#, "Nothing"]
-#paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
+paths = ["D:\\DataTraining\\book\\*", "D:\\DataTraining\\box\\*","D:\\DataTraining\\cup\\*"]#, "D:\\DataTraining\\nothing\\*"]
 #classes = ["Cup"]
 #paths = ["D:\\DataTraining\\cup\\*"]
 
@@ -220,42 +221,56 @@ sus.labels = classes
 
 
 
-#sus.train(paths, classes, 400)
-#sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
+sus.train(paths, classes, 400)
+sus.save_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
-sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
-
-img_array = []
-for i,p in enumerate(glob.glob("C:\\Users\\Marcus\\Downloads\\left\\*")):
-    if (i > 1):
-        print("{0} out of {1} images done".format(i, 1453))
-        res = sus.detect(cv2.imread(p), True)
-        if(len(res) != 0):
-            img_array.append(res[2])
-        else:
-            img_array.append(cv2.imread(p))
+#sus.load_model("C:\\Users\\Marcus\\Documents\\GitHub\\PerceptionForAutonomousSystems\\models\\sus_model.h5")
 
 
-height, width, layers = blank_image.shape
-size = (width, height)
-out = cv2.VideoWriter('test.avi', cv2.VideoWriter_fourcc(*'mp4v'), 15, size)
-
-for i in range(len(img_array)):
-    out.write(img_array[i])
-
-out.release()
-
+#img_array = []
+#for i,p in enumerate(glob.glob("C:\\Users\\Marcus\\Downloads\\left\\*")):
+#    if (i > 1):
+#        print("{0} out of {1} images done".format(i, 1453))
+#        res = sus.detect(cv2.imread(p), True)
+#        if(len(res) != 0):
+#            img_array.append(res[2])
+#        else:
+#            img_array.append(cv2.imread(p))
+#
+#
+#height, width, layers = blank_image.shape
+#size = (width, height)
+#out = cv2.VideoWriter('test.avi', cv2.VideoWriter_fourcc(*'mp4v'), 15, size)
+#
+#for i in range(len(img_array)):
+#    out.write(img_array[i])
+#
+#out.release()
 #print("White Cup:")
-#print(np.around(sus.detect(white_cup), decimals=2))
+#print(np.around(sus.detect(white_cup)[0], decimals=4))
 #cv2.waitKey(0)
 #print("Book:")
-#print(np.around(sus.detect(book), decimals=2))
+#print(np.around(sus.detect(book)[0], decimals=4))
 #cv2.waitKey(0)
 #print("Purple cup:")
-#print(np.around(sus.detect(purple_cup), decimals=2))
+#print(np.around(sus.detect(purple_cup)[0], decimals=4))
 #cv2.waitKey(0)
 #print("Black box Cup:")
-#print(np.around(sus.detect(black_box), decimals=2))
+#print(np.around(sus.detect(black_box)[0], decimals=4))
 #cv2.waitKey(0)
+
+
+print("White Cup:")
+cv2.imshow("Cup", sus.detect(white_cup, True)[2])
+cv2.waitKey(0)
+print("Book:")
+cv2.imshow("Cup", sus.detect(book, True)[2])
+cv2.waitKey(0)
+print("Purple cup:")
+cv2.imshow("Cup", sus.detect(purple_cup, True)[2])
+cv2.waitKey(0)
+print("Black box Cup:")
+cv2.imshow("Cup", sus.detect(black_box, True)[2])
+cv2.waitKey(0)
 
 #print(np.argmax(sus.detect(non_blank), axis = 1)[0])
