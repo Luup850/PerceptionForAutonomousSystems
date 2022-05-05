@@ -121,7 +121,7 @@ class SusDetector:
 
             area = copy.deepcopy(img[y_start:y_end, x_start:x_end, :])
             area = cv2.resize(area, (32, 32))
-            
+
 
             if(not check_if_in_area((x_c, y_c), occlusion_area)):
                 regions.append(area)
@@ -144,7 +144,7 @@ class SusDetector:
             cv2.rectangle(clone, (pos[l][0], pos[l][1]), (pos[l][2], pos[l][3]), colors[l % 3], 2)
 
         ### Enable me to see the sus regions ###
-        cv2.imshow("Sus", clone)
+        #cv2.imshow("Sus", clone)
  
         return (res, pos)
 
