@@ -131,8 +131,11 @@ class SusDetector:
 
             
         regions = np.array(regions)
-        if(len(regions) == 0):
-            return []
+        if(len(regions) == 0 and return_images):
+            return (regions, pos, clone)
+        elif(len(regions) == 0):
+            return (regions, pos)
+            
         res = self.model.predict(regions, batch_size=len(regions))
 
         for l,r in enumerate(res):
