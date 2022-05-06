@@ -1,5 +1,6 @@
 #%%
 import copy
+import os
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
@@ -104,8 +105,6 @@ class SusDetector:
         colors = [(255,0,0), (0,255,0), (0,0,255)]
         pos = []
         center = []
-
-        occlusion_area = (725, 1032, 131, 679)
 
         for i,sus in enumerate(sus_regions):
             x_c = int((sus[2] + sus[0]) / 2)
@@ -229,9 +228,11 @@ class SusDetector:
 
 def makevideo(path : str, d : SusDetector):
     img_array = []
-    for i,p in enumerate(glob.glob(path)):
+    length = len(glob.glob(path))
+    for i,p in enumerate(sorted(glob.glob(path), key=lambda p: int((p[p.find("\\Right"):])[6:-4]))):
         if (i > 1):
-            print("{0} out of {1} images done".format(i, 1453))
+            print("{0} out of {1} images done".format(i, length))
+            print(p)
             res = d.detect(cv2.imread(p), True)
             if(len(res) != 0):
                 img_array.append(res[2])
@@ -260,18 +261,18 @@ def makevideo(path : str, d : SusDetector):
 #print(np.around(sus.detect(black_box)[0], decimals=4))
 #cv2.waitKey(0)
 
-def test(sus : SusDetector):
-    print("White Cup:")
-    cv2.imshow("Cup", sus.detect(white_cup, True)[2])
-    cv2.waitKey(0)
-    print("Book:")
-    cv2.imshow("Cup", sus.detect(book, True)[2])
-    cv2.waitKey(0)
-    print("Purple cup:")
-    cv2.imshow("Cup", sus.detect(purple_cup, True)[2])
-    cv2.waitKey(0)
-    print("Black box Cup:")
-    cv2.imshow("Cup", sus.detect(black_box, True)[2])
-    cv2.waitKey(0)
+#def test(sus : SusDetector):
+#    print("White Cup:")
+#    cv2.imshow("Cup", sus.detect(white_cup, True)[2])
+#    cv2.waitKey(0)
+#    print("Book:")
+#    cv2.imshow("Cup", sus.detect(book, True)[2])
+#    cv2.waitKey(0)
+#    print("Purple cup:")
+#    cv2.imshow("Cup", sus.detect(purple_cup, True)[2])
+#    cv2.waitKey(0)
+#    print("Black box Cup:")
+#    cv2.imshow("Cup", sus.detect(black_box, True)[2])
+#    cv2.waitKey(0)
 
 #print(np.argmax(sus.detect(non_blank), axis = 1)[0])

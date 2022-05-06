@@ -22,6 +22,7 @@ detector.load_model("models/sus_model.h5")
 detector.occlusion_area.append((658, 1074, 4, 687))
 detector.occlusion_area.append((6, 347, 598, 719))
 detector.occlusion_area.append((1233, 1279, 4, 687))
+detector.occlusion_area.append((1059, 1280, 374, 720))
 
 # 5. If you want to make a video, use the following function. It takes a folder full of images + a detector that is preconfigured.
 makevideo("D:\\DataFolder\\Stereo_conveyor_with_occlusions\\Undistort_Right\\*", detector)
