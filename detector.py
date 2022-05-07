@@ -76,9 +76,7 @@ def errode_dilate(img, kernel_size, ite):
 #cv2.waitKey(0)
 
 
-# Actual detector
 class SusDetector:
-
     def __init__(self, blank_image):
         self.blank_image = blank_image
         self.model = object
@@ -159,14 +157,16 @@ class SusDetector:
     
     def compile_model(self):
         self.model = models.Sequential()
+        #self.model.add(layers.experimental.preprocessing.RandomFlip(mode="horizontal_and_vertical"))
         self.model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
         self.model.add(layers.MaxPooling2D((7, 7)))
         #model.add(layers.Conv2D(4, (3, 3), activation='relu'))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(64, activation='relu'))
+        #self.model.add(layers.Dropout(0.3))
         self.model.add(layers.Dense(3, activation='softmax'))
 
-        self.model.summary()
+        #self.model.summary()
         self.model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['MeanSquaredError', 'accuracy'])
 
     def train(self, list_of_paths, labels, epoch):

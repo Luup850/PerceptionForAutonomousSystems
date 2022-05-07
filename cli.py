@@ -14,7 +14,7 @@ black_box = cv2.imread("training_images/black_box.png")
 detector = Detector(blank_image)
 
 # 3. Load the model. All models are saved in 'models'.
-detector.load_model("models/sus_model.h5")
+detector.load_model("models/sus_model_good.h5")
 
 # 4. If you want to exclude areas of the image, you can do so by adding them to the 'exclude' list.
 #    The way its done is by appending a tuple with the following format: (x, y, width, height)
